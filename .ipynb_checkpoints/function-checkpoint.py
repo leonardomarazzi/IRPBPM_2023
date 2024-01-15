@@ -201,12 +201,17 @@ class Utils:
         
     def aggregation_encoding(df_grouped,df):
         df_grouped_t = df_grouped.copy()
-        for col in df_grouped_t.columns:
-            
+        
+        for col in df_grouped_t.columns:    
             #the columns needs to have only list elements
             x = df_grouped_t[col].iloc[0]
             if(type(x) == list and col != "dt"):
-                    
+
+                #if there is a float inside the list we should make avg,max,min
+
+                #if there is an int we do mode inside the list we should make avg,max,min
+
+                
                 for el in df[col].unique():
                     df_grouped_t[el] = df_grouped_t[col].map(lambda x : x.count(el)/len(x))
                 df_grouped_t.drop(col,axis=1,inplace = True)
