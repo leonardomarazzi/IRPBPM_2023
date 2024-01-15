@@ -11,7 +11,7 @@ from sklearn.pipeline import Pipeline
 from pandas.api.types import is_numeric_dtype
 import numpy as np
 from IPython.display import display
-
+from statistics import mode, mean
 
 
 
@@ -199,30 +199,72 @@ class Utils:
                 c.append(col)
         display(df_grouped[c])
         
+        
+    # def aggregation_encoding(df_grouped,df):
+    #     df_grouped_t = df_grouped.copy()
+        
+    #     for col in df_grouped_t.columns:    
+    #         #the columns needs to have only list elements
+    #         x = df_grouped_t[col].iloc[0]
+    #         if(type(x) == list and col != "dt"):
+
+    #             #if there is a float inside the list we should make avg,max,min
+    #             if type(x[0]) == float:
+    #                 df_grouped_t[col + "_avg"] = df_grouped_t[col].map(lambda x : mean(x))
+    #                 df_grouped_t[col + "_max"] = df_grouped_t[col].map(lambda x : max(x))
+    #                 df_grouped_t[col + "_min"] = df_grouped_t[col].map(lambda x : min(x))
+
+    #             #if there is an int we do mode inside the list we should make mode
+    #             if type(x[0]) == int:
+    #                 df_grouped_t[col + "_mode"] = df_grouped_t[col].map(lambda x : mode(x))
+                
+    #             for el in df[col].unique():
+    #                 df_grouped_t[el] = df_grouped_t[col].map(lambda x : x.count(el)/len(x))
+    #             df_grouped_t.drop(col,axis=1,inplace = True)
+        
+                
+    #     # df_grouped_t["avg_dt"] = df_grouped_t["dt"].map(lambda x : np.average(x))
+    #     # df_grouped_t["max_dt"] = df_grouped_t["dt"].map(lambda x : np.max(x))
+    #     # df_grouped_t["min_dt"] = df_grouped_t["dt"].map(lambda x : np.min(x))
+    
+    
+    #     return df_grouped_t.copy()
+
+
     def aggregation_encoding(df_grouped,df):
+
         df_grouped_t = df_grouped.copy()
-        
-        for col in df_grouped_t.columns:    
-            #the columns needs to have only list elements
-            x = df_grouped_t[col].iloc[0]
-            if(type(x) == list and col != "dt"):
 
-                #if there is a float inside the list we should make avg,max,min
+        for col in df_grouped.columns:    
+            #the columns need to have only list elements
+            x = df_grouped[col].iloc[0]
 
-                #if there is an int we do mode inside the list we should make avg,max,min
+            if (col != "dt"):
+                if(type(x) == list):
+                    #if there is a float inside the list we should make avg,max,min
+                    if type(x[0]) == float:
+                        df_grouped_t[col + "_avg"] = df_grouped_t[col].map(lambda x : mean(x))
+                        df_grouped_t[col + "_max"] = df_grouped_t[col].map(lambda x : max(x))
+                        df_grouped_t[col + "_min"] = df_grouped_t[col].map(lambda x : min(x))
+                        #df_grouped_t.drop(col,axis=1,inplace = True)
 
-                
-                for el in df[col].unique():
-                    df_grouped_t[el] = df_grouped_t[col].map(lambda x : x.count(el)/len(x))
-                df_grouped_t.drop(col,axis=1,inplace = True)
-        
-                
-        df_grouped_t["avg_dt"] = df_grouped_t["dt"].map(lambda x : np.average(x))
+                    #if there is an int we do mode inside the list we should make mode
+                    if type(x[0]) == int:
+                        df_grouped_t[col + "_mode"] = df_grouped_t[col].map(lambda x : mode(x))
+                        #df_grouped_t.drop(col,axis=1,inplace = True)
+                    
+                    if type(col) not in [float, int, pd._libs.tslibs.timedeltas.Timedelta]:
+                        for el in df[col].unique():
+                            df_grouped_t[el] = df_grouped_t[col].map(lambda x : x.count(el)/len(x)) # frequency of an element
+                        df_grouped_t.drop(col,axis=1, inplace = True)
+
+        df_grouped_t["avg_dt"] = df_grouped_t["dt"].map(lambda x : np.mean(x))
         df_grouped_t["max_dt"] = df_grouped_t["dt"].map(lambda x : np.max(x))
         df_grouped_t["min_dt"] = df_grouped_t["dt"].map(lambda x : np.min(x))
-    
-    
-        return df_grouped_t.copy()
+
+        df_grouped_t.drop("dt", axis=1, inplace = True)
+
+        return df_grouped_t
 
 
     def prod_nan_with_treshold(df,treshould=50):
@@ -234,4 +276,13 @@ class Utils:
         df = df[columns]
         
         return df
-            
+    
+    def drop_id_columns(df, drop_id_threshold):
+        df_new = df.copy()
+
+        for col in df.columns:
+            if (len(df[col].unique())/df.shape[0]) >= drop_id_threshold:
+                df_new = df_new.drop([col], axis=1)
+                
+        return df_new
+                
