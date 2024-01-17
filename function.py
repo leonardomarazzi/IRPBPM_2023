@@ -152,12 +152,12 @@ class Utils:
                         df_grouped_t[col + "_avg"] = df_grouped_t[col].map(lambda x : mean(x))
                         df_grouped_t[col + "_max"] = df_grouped_t[col].map(lambda x : max(x))
                         df_grouped_t[col + "_min"] = df_grouped_t[col].map(lambda x : min(x))
-                        #df_grouped_t.drop(col,axis=1,inplace = True)
+                        df_grouped_t.drop(col,axis=1,inplace = True)
 
                     #if there is an int we do mode inside the list we should make mode
                     if type(x[0]) == int:
                         df_grouped_t[col + "_mode"] = df_grouped_t[col].map(lambda x : mode(x))
-                        #df_grouped_t.drop(col,axis=1,inplace = True)
+                        df_grouped_t.drop(col,axis=1,inplace = True)
                     
                     if type(col) not in [float, int, pd._libs.tslibs.timedeltas.Timedelta]:
                         for el in df[col].unique():
@@ -219,5 +219,6 @@ class Utils:
                         t_i.append(0)
                 
                 df_grouped[f"t_{i+1}"] = t_i
+        df_grouped.drop(columns_to_encode,inplace=True,axis=1)
         
         return df_grouped
