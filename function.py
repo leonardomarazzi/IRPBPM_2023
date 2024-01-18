@@ -201,12 +201,38 @@ class Utils:
 
 
     # index encode columns from the list columns_to_encode
-    def index_encoding(df_grouped, df, columns_to_encode):
+    def index_encoding_2(df_grouped, df, columns_to_encode):
         
         for column_to_encode in columns_to_encode:
             max_lenght = df_grouped[column_to_encode].map(lambda x: len(x)).max()
             
             for i in range(0, max_lenght):
+                for act in df[column_to_encode].unique():
+                    df_grouped[f"{act}_{i+1}"] = df_grouped[column_to_encode].map(lambda x : 1 if act in x else 0).copy()
+                    
+                t_i = []
+            
+                for index in range(0,len(df_grouped)):
+                    try:
+                        t_i.append(df_grouped.iloc[index]["ts"][i])
+                    except:
+                        t_i.append(0)
+                
+                df_grouped[f"t_{i+1}"] = t_i
+        df_grouped.drop(columns_to_encode,inplace=True,axis=1)
+        
+        return df_grouped
+
+
+    def index_encoding(df_grouped, df, columns_to_encode):
+        lenghts = []
+        max_lenght = df_grouped["activity"].map(lambda x: len(x)).max()
+
+        if max_lenght>20:
+            max_lenght = df_grouped["activity"].map(lambda x: len(x)).mode()[0]
+            
+        for i in range(0, max_lenght):
+            for column_to_encode in columns_to_encode:
                 for act in df[column_to_encode].unique():
                     df_grouped[f"{act}_{i+1}"] = df_grouped[column_to_encode].map(lambda x : 1 if act in x else 0).copy()
                     
